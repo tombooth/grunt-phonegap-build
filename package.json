@@ -1,0 +1,35 @@
+{
+  "name": "grunt-phonegap-build",
+  "description": "Build phonegap app via build.phonegap.com",
+  "version": "0.0.1",
+  "homepage": "https://github.com/centralway/grunt-phonegap-build",
+  "author": {
+    "name": "Martin Naumann",
+    "email": "martin.naumann@centralway.com"
+  },
+  "contributors": [],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/centralway/grunt-phonegap-build.git"
+  },
+  "main": "grunt.js",
+  "engines": {
+    "node": ">= 0.8.0"
+  },
+  "scripts": {
+    "test": "grunt test"
+  },
+  "dependencies": {
+      "needle":""
+  },
+  "peerDependencies": {
+    "grunt": "~0.4.0rc8"
+  },
+  "devDependencies": {
+    "grunt-testacular": "",
+    "grunt": "~0.4.0rc8"
+  },
+  "keywords": [
+    "gruntplugin"
+  ]
+}
