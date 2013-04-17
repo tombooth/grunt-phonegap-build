@@ -14,13 +14,13 @@ var doUpload = function(grunt, options, onResult) {
 }
 
 module.exports = function(grunt) {
-  grunt.registerTask("phonegap-build", "Creates a ZIP archive and uploads it to build.phonegap.com to create a new build", function(args) {
+  grunt.registerMultiTask("phonegap-build", "Creates a ZIP archive and uploads it to build.phonegap.com to create a new build", function(args) {
     var opts = this.options();
     if(!grunt.file.exists(opts.archive)) {
       grunt.log.fail("Archive at " + opts.archive + " does not exist! Forgot to run 'zip' task before? Did 'zip' succeed?");
       return false;
     }
-      
+
     var done = this.async();
     doUpload(grunt, opts, function(err, resp, body) {
       if(!err && resp.statusCode == 200) {
@@ -33,6 +33,6 @@ module.exports = function(grunt) {
         return false;
       }
     });
-      
+
   });
 }
