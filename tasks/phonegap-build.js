@@ -29,6 +29,11 @@ module.exports = function(grunt) {
       if(!err && resp.statusCode == 200) {
         grunt.log.ok("Upload successful");
         done();
+      } else if (err) {
+        grunt.log.fail("Upload failed:");
+        grunt.log.error("Message: " + err);
+        done();
+        return false;
       } else {
         grunt.log.fail("Upload failed (HTTP " + resp.statusCode + ")");
         grunt.log.error("Message: " + body.error);
