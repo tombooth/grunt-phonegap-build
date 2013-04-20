@@ -6,6 +6,7 @@ var doUpload = function(grunt, options, onResult) {
       }, {
         username: options.user.email,
         password: options.user.password,
+        timeout: options.timeout,
         multipart: true
       },
       onResult
@@ -15,7 +16,9 @@ var doUpload = function(grunt, options, onResult) {
 
 module.exports = function(grunt) {
   grunt.registerMultiTask("phonegap-build", "Creates a ZIP archive and uploads it to build.phonegap.com to create a new build", function(args) {
-    var opts = this.options();
+    var opts = this.options({
+      timeout: 5000
+    });
     if(!grunt.file.exists(opts.archive)) {
       grunt.log.fail("Archive at " + opts.archive + " does not exist! Forgot to run 'zip' task before? Did 'zip' succeed?");
       return false;
