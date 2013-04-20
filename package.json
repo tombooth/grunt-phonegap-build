@@ -20,7 +20,8 @@
     "test": "grunt test"
   },
   "dependencies": {
-      "needle":""
+    "needle": "",
+    "read": "~1.0.4"
   },
   "peerDependencies": {
     "grunt": "~0.4.0"
