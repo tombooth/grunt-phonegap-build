@@ -28,7 +28,8 @@ Then, some configuration for phonegap-build is needed:
 
  1. ```archive```: The path (or filename, if it's in the same directory as the Gruntfile) to the ZIP archive
  2. ```appId```: The App ID of the application on build.phonegap.com (see details of your app there to get it)
- 3. ```user```: The email and password you log in with on build.phonegap.com
+ 3. ```user```: The email and password (optional) you log in with on build.phonegap.com. If you leave out your password it will prompt you when grunt runs.
+ 4. ```timeout```: (optional, default: 5 seconds) a timeout. You may need to increase this value if you are trying to upload a large app or have a slow connection. You may see a 
 
 That's all. Once you configured the build-phonegap, you can run
 
