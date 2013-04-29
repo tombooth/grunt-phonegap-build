@@ -2,7 +2,8 @@ var needle = require("needle"),
     read = require("read");
 
 var doUpload = function(grunt, options, onResult) {
-    needle.put('https://build.phonegap.com/api/v1/apps/' + options.appId, {
+    var query = options.user.token ? '?auth_token=' + options.user.token : '';
+    needle.put('https://build.phonegap.com/api/v1/apps/' + options.appId + query, {
         file: { file: options.archive, content_type: "application/zip" }
       }, {
         username: options.user.email,
@@ -44,7 +45,7 @@ module.exports = function(grunt) {
           }
         };
 
-    if (!opts.user.password) {
+    if (!opts.user.password && !opts.user.token) {
       read({ prompt: 'Password: ', silent: true }, function(er, password) {
         opts.user.password = password;
         doUpload(grunt, opts, report);
