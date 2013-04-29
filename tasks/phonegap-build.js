@@ -2,18 +2,32 @@ var needle = require("needle"),
     read = require("read");
 
 var doUpload = function(grunt, options, onResult) {
-    var query = options.user.token ? '?auth_token=' + options.user.token : '';
+  if(options.isRepository) { //This is a repository-backed app
+    var query = options.user.token ? '?auth_token=' + options.user.token : '';    
     needle.put('https://build.phonegap.com/api/v1/apps/' + options.appId + query, {
-        file: { file: options.archive, content_type: "application/zip" }
-      }, {
-        username: options.user.email,
-        password: options.user.password,
-        timeout: options.timeout,
-        multipart: true
-      },
+      data: {pull: true}
+    }, {
+      username: options.user.email,
+      password: options.user.password,
+      timeout: options.timeout    
+    },
       onResult
-    );
-
+    );    
+  
+  }
+  else { //Oh, a file-based app
+    var query = options.user.token ? '?auth_token=' + options.user.token : '';    
+    needle.put('https://build.phonegap.com/api/v1/apps/' + options.appId + query, {
+      file: { file: options.archive, content_type: "application/zip" }
+    }, {
+      username: options.user.email,
+      password: options.user.password,
+      timeout: options.timeout,
+      multipart: true
+    },
+      onResult
+    );    
+  }
 }
 
 module.exports = function(grunt) {

@@ -1,6 +1,9 @@
 # grunt-phonegap-build
 This is a grunt-task to upload a ZIP archive to [build.phonegap.com](http://build.phonegap.com) and trigger a new build.
 
+## Current version & development
+The current version is **0.0.6**, this project is in **BETA** and under **active** development.
+
 ##Configuration
 First of all, you need a ZIP file, containing the contents of the PhoneGap app to be built. This can be created using [grunt-zipstream](https://github.com/Two-Screen/grunt-zipstream) for example.
 The ZIP file should have the "index.html" and the ["Config.xml"](http://build.phonegap.com/docs/config-xml) in the root level and all required resources below, for example:
@@ -26,10 +29,16 @@ The ZIP file should have the "index.html" and the ["Config.xml"](http://build.ph
 
 Then, some configuration for phonegap-build is needed:
 
- 1. ```archive```: The path (or filename, if it's in the same directory as the Gruntfile) to the ZIP archive
+### General options
  2. ```appId```: The App ID of the application on build.phonegap.com (see details of your app there to get it)
- 3. ```user```: The email and password (optional) you log in with on build.phonegap.com. If you leave out your password it will prompt you when grunt runs.
- 4. ```timeout```: (optional, default: 5 seconds) a timeout. You may need to increase this value if you are trying to upload a large app or have a slow connection. You may see a 
+ 3. ```user```: The email and password or the Github authentication token (all three optional) you log in with on build.phonegap.com. If you leave out your password it will prompt you when grunt runs.
+ 4. ```timeout```: (optional, default: 5 seconds) a timeout. You may need to increase this value if you are trying to upload a large app or have a slow connection.
+
+### For file-based applications (using a *.zip file)
+ 1. ```archive```: The path (or filename, if it's in the same directory as the Gruntfile) to the ZIP archive
+ 
+### For repository-based applications (using a github repository)
+1. ```isRepository```: True to set the build method to "pull from repository"
 
 That's all. Once you configured the build-phonegap, you can run
 
@@ -59,11 +68,10 @@ Here is an example for a Gruntfile.js:
           },
           release: {
             options: {
-              archive: "app.zip",
+              "isRepository": "true",
               "appId": "9876",
               "user": {
-                "email": "your.email@company.com",
-                "password": "yourSeriousPassw0rd123"
+                "token": "ABCD123409876XYZ"
               }
             }
           }
