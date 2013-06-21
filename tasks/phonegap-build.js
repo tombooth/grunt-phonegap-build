@@ -127,7 +127,7 @@ function downloadApps(taskRefs, callback) {
       );
    }
 
-   check();
+   timeoutId = setTimeout(check, taskRefs.options.pollRate);
 
 }
 
