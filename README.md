@@ -2,7 +2,7 @@
 This is a grunt-task to upload a ZIP archive to [build.phonegap.com](http://build.phonegap.com) and trigger a new build.
 
 ## Current version & development
-The current version is **0.0.6**, this project is in **BETA** and under **active** development.
+The current version is **0.0.7**, this project is in **BETA** and under **active** development.
 
 ##Configuration
 First of all, you need a ZIP file, containing the contents of the PhoneGap app to be built. This can be created using [grunt-zipstream](https://github.com/Two-Screen/grunt-zipstream) for example.
