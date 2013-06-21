@@ -44,18 +44,18 @@ Then, some configuration for phonegap-build is needed:
 ### When unlocking keys
  1. ```keys```: A map of platform name [ios, android, ...] to parameters required to unlock the keys. For example:
 
-    keys: {
-      ios: { "password": "foobar" },
-      android: { "key_pw": "foobar", "keystore_pw": "foobar" }
-    }
+        keys: {
+          ios: { "password": "foobar" },
+          android: { "key_pw": "foobar", "keystore_pw": "foobar" }
+        }
 
 ### When downloading apps
  1. ```download```: A map of platform name [ios, android, ...] to path to save the app to. For example:
 
-    download: {
-      ios: 'dist/ios.ipa',
-      android: 'dist/android.apk'
-    }
+        download: {
+          ios: 'dist/ios.ipa',
+          android: 'dist/android.apk'
+        }
 
 That's all. Once you configured the build-phonegap, you can run
 
