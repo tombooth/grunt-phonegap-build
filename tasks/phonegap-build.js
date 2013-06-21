@@ -57,8 +57,8 @@ function getKeys(taskRefs, callback) {
    taskRefs.grunt.log.ok("Getting keys for app");
 
    needle.get('https://build.phonegap.com/api/v1/apps/' + taskRefs.options.appId, null,
-         function(error, response, body) {
-            var keys = JSON.parse(body).keys,
+         responseHandler("Get keys", taskRefs, function(response, body) {
+            var keys = body.keys,
                 platformsUnlockable = Object.keys(taskRefs.options.keys),
                 numUnlockable = platformsUnlockable.length;
 
@@ -66,15 +66,16 @@ function getKeys(taskRefs, callback) {
 
             platformsUnlockable.forEach(function(platform) {
                var buildInfo = keys[platform];
+
                if (buildInfo) {
-                  taskRefs.grunt.log.ok("Unlocking " + platform);
-                  needle.put('https://build.phonegap.com' + keys[platform].link, { data: taskRefs.options.keys[platform] }, null, unlocked);
+                  needle.put('https://build.phonegap.com' + keys[platform].link, { data: taskRefs.options.keys[platform] }, null, 
+                     responseHandler("Unlocking " + platform, taskRefs, unlocked, unlocked));
                } else {
                   taskRefs.grunt.log.warn("No key attached to app for " + platform);
                   unlocked();
                }
             });
-         });
+         }));
 
 }
 
@@ -105,35 +106,30 @@ function downloadApps(taskRefs, callback) {
    function ready(platform, status, url) {
       platformsToDownload.splice(platformsToDownload.indexOf(platform), 1);
       if (status === 'complete') {
-         taskRefs.grunt.log.ok("Downloading " + platform + " app from " + url);
          needle.get('https://build.phonegap.com' + url, null,
-               function(err, response, data) {
-                  if (err) {
-                     taskRefs.grunt.log.error("Failed to get download location for " + platform);
-                     if (--num === 0) { clearTimeout(timeoutId); callback(); }
-                  } else {
-                     needle._get(data.location, null, 
-                        function(err, response, data) {
-                           taskRefs.grunt.log.ok("Downloaded " + platform + " app");
-                           require('fs').writeFile(taskRefs.options.download[platform], data, function() {
-                              taskRefs.grunt.log.ok("Written " + platform + " app");
-                              if (--num === 0) { clearTimeout(timeoutId); callback(); }
-                           });
+               responseHandler("Getting download location for " + platform, taskRefs, function(response, data) {
+                  taskRefs.grunt.log.ok("Downloading " + platform + " app");
+                  needle._get(data.location, null, 
+                     function(err, response, data) {
+                        taskRefs.grunt.log.ok("Downloaded " + platform + " app");
+                        require('fs').writeFile(taskRefs.options.download[platform], data, function() {
+                           taskRefs.grunt.log.ok("Written " + platform + " app");
+                           if (--num === 0) { clearTimeout(timeoutId); callback(); }
                         });
-                  }
-               });
+                     });
+               }, function() { 
+                  taskRefs.grunt.log.error("Failed to get download location for " + platform);
+                  if (--num === 0) { clearTimeout(timeoutId); callback(); }
+               }));
       } else {
-         taskRefs.grunt.log.error('Failed to download ' + platform + ': ' + status);
+         taskRefs.grunt.log.error('Build failed for ' + platform + ': ' + status);
          if (--num === 0) { clearTimeout(timeoutId); callback(); }
       }
    }
 
    function check() {
-      taskRefs.grunt.log.ok("Checking build status");
       needle.get('https://build.phonegap.com/api/v1/apps/' + taskRefs.options.appId, null,
-            function(err, response, data) {
-               var data = JSON.parse(data);
-
+            responseHandler("Checking build status", taskRefs, function(response, data) {
                platformsToDownload.forEach(function(platform) {
                   if (data.status[platform] !== 'pending') {
                      ready(platform, data.status[platform], data.download[platform]);
@@ -141,26 +137,29 @@ function downloadApps(taskRefs, callback) {
                });
 
                timeoutId = setTimeout(check, taskRefs.options.pollRate);
-            });
+            })
+      );
    }
 
    check();
 
 }
 
-function responseHandler(name, taskRefs, success) {
+function responseHandler(name, taskRefs, success, error) {
+   error = error || taskRefs.done;
+
    return function(err, resp, body) {
-      if(!err && resp.statusCode == 200) {
-         taskRefs.grunt.log.ok(name + " successful");
-         success();
+      if(!err && (resp.statusCode >= 200 && resp.statusCode < 400)) {
+         taskRefs.grunt.log.ok(name + " successful (HTTP " + resp.statusCode + ")");
+         success(resp, body);
       } else if (err) {
          taskRefs.grunt.log.fail(name + " failed:");
          taskRefs.grunt.log.error("Message: " + err);
-         taskRefs.done(new Error(err));
+         error(new Error(err));
       } else {
          taskRefs.grunt.log.fail(name + " failed (HTTP " + resp.statusCode + ")");
          taskRefs.grunt.log.error("Message: " + body.error);
-         taskRefs.done(new Error(body.error));
+         error(new Error(body.error));
       }
    }
 }
@@ -179,7 +178,10 @@ module.exports = function(grunt) {
 
     var done = this.async(),
         taskRefs = { grunt: grunt, options: opts, done: done },
-        report = responseHandler("Upload", taskRefs, done);
+        report = responseHandler("Upload", taskRefs, function() {
+           if (opts.download) downloadApps(taskRefs, done);
+           else done();
+        });
 
     if (!opts.user.password && !opts.user.token) {
       read({ prompt: 'Password: ', silent: true }, function(er, password) {
