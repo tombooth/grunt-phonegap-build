@@ -148,10 +148,27 @@ function downloadApps(grunt, options, callback) {
 
 }
 
+function responseHandler(name, taskRefs, success) {
+   return function(err, resp, body) {
+      if(!err && resp.statusCode == 200) {
+         taskRefs.grunt.log.ok(name + " successful");
+         success();
+      } else if (err) {
+         taskRefs.grunt.log.fail(name + " failed:");
+         taskRefs.grunt.log.error("Message: " + err);
+         taskRefs.done(new Error(err));
+      } else {
+         taskRefs.grunt.log.fail(name + " failed (HTTP " + resp.statusCode + ")");
+         taskRefs.grunt.log.error("Message: " + body.error);
+         taskRefs.done(new Error(body.error));
+      }
+   }
+}
+
 module.exports = function(grunt) {
   grunt.registerMultiTask("phonegap-build", "Creates a ZIP archive and uploads it to build.phonegap.com to create a new build", function(args) {
     var opts = this.options({
-      timeout: 5000,
+      timeout: 60000,
       pollRate: 15000
     });
 
@@ -161,23 +178,8 @@ module.exports = function(grunt) {
     }
 
     var done = this.async(),
-        report = function(err, resp, body) {
-          if(!err && resp.statusCode == 200) {
-            grunt.log.ok("Upload successful");
-            if (opts.download) downloadApps(grunt, opts, done);
-            else done();
-          } else if (err) {
-            grunt.log.fail("Upload failed:");
-            grunt.log.error("Message: " + err);
-            done();
-            return false;
-          } else {
-            grunt.log.fail("Upload failed (HTTP " + resp.statusCode + ")");
-            grunt.log.error("Message: " + body.error);
-            done();
-            return false;
-          }
-        };
+        taskRefs = { grunt: grunt, options: opts, done: done },
+        report = responseHandler("Upload", taskRefs, done);
 
     if (!opts.user.password && !opts.user.token) {
       read({ prompt: 'Password: ', silent: true }, function(er, password) {
