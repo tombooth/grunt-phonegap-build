@@ -7,15 +7,15 @@ function responseHandler(name, taskRefs, success, error) {
 
    return function(err, resp, body) {
       if(!err && (resp.statusCode >= 200 && resp.statusCode < 400)) {
-         taskRefs.grunt.log.ok(name + " successful (HTTP " + resp.statusCode + ")");
+         taskRefs.log.ok(name + " successful (HTTP " + resp.statusCode + ")");
          success(resp, body);
       } else if (err) {
-         taskRefs.grunt.log.fail(name + " failed:");
-         taskRefs.grunt.log.error("Message: " + err);
+         taskRefs.log.fail(name + " failed:");
+         taskRefs.log.error("Message: " + err);
          error(new Error(err));
       } else {
-         taskRefs.grunt.log.fail(name + " failed (HTTP " + resp.statusCode + ")");
-         taskRefs.grunt.log.error("Message: " + body.error);
+         taskRefs.log.fail(name + " failed (HTTP " + resp.statusCode + ")");
+         taskRefs.log.error("Message: " + body.error);
          error(new Error(body.error));
       }
    }
@@ -40,7 +40,7 @@ function start(taskRefs) {
 
 function getKeys(taskRefs, callback) {
 
-   taskRefs.grunt.log.ok("Getting keys for app");
+   taskRefs.log.ok("Getting keys for app");
 
    taskRefs.needle.get('/api/v1/apps/' + taskRefs.options.appId, null,
          responseHandler("Get keys", taskRefs, function(response, body) {
@@ -57,7 +57,7 @@ function getKeys(taskRefs, callback) {
                   taskRefs.needle.put(keys[platform].link, { data: taskRefs.options.keys[platform] }, null, 
                      responseHandler("Unlocking " + platform, taskRefs, unlocked, unlocked));
                } else {
-                  taskRefs.grunt.log.warn("No key attached to app for " + platform);
+                  taskRefs.log.warn("No key attached to app for " + platform);
                   unlocked();
                }
             });
@@ -77,7 +77,7 @@ function doUpload(taskRefs, callback) {
     config.multipart = true;
   }
 
-  taskRefs.grunt.log.ok("Starting upload");
+  taskRefs.log.ok("Starting upload");
 
   taskRefs.needle.put('/api/v1/apps/' + taskRefs.options.appId, data, config, callback);
 
@@ -94,21 +94,21 @@ function downloadApps(taskRefs, callback) {
       if (status === 'complete') {
          taskRefs.needle.get(url, null,
                responseHandler("Getting download location for " + platform, taskRefs, function(response, data) {
-                  taskRefs.grunt.log.ok("Downloading " + platform + " app");
+                  taskRefs.log.ok("Downloading " + platform + " app");
                   needle.get(data.location, null, 
                      function(err, response, data) {
-                        taskRefs.grunt.log.ok("Downloaded " + platform + " app");
+                        taskRefs.log.ok("Downloaded " + platform + " app");
                         require('fs').writeFile(taskRefs.options.download[platform], data, function() {
-                           taskRefs.grunt.log.ok("Written " + platform + " app");
+                           taskRefs.log.ok("Written " + platform + " app");
                            if (--num === 0) { clearTimeout(timeoutId); callback(); }
                         });
                      });
                }, function() { 
-                  taskRefs.grunt.log.error("Failed to get download location for " + platform);
+                  taskRefs.log.error("Failed to get download location for " + platform);
                   if (--num === 0) { clearTimeout(timeoutId); callback(); }
                }));
       } else {
-         taskRefs.grunt.log.error('Build failed for ' + platform + ': ' + status);
+         taskRefs.log.error('Build failed for ' + platform + ': ' + status);
          if (--num === 0) { clearTimeout(timeoutId); callback(); }
       }
    }
@@ -144,7 +144,7 @@ module.exports = function(grunt) {
     }
 
     var done = this.async(),
-        taskRefs = { grunt: grunt, options: opts, done: done };
+        taskRefs = { log: grunt.log, options: opts, done: done };
 
     if (!opts.user.password && !opts.user.token) {
       read({ prompt: 'Password: ', silent: true }, function(er, password) {
