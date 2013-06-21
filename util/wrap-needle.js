@@ -13,7 +13,7 @@ function mapMerge(map1, map2) {
    return map1 ? map1 : map2;
 }
 
-module.exports = function wrapNeedle(options) {
+module.exports = function wrapNeedle(baseUrl, options) {
    var config = {
          username: options.user.email,
          password: options.user.password,
@@ -30,7 +30,7 @@ module.exports = function wrapNeedle(options) {
             var configIndex = needleFn.length - 2,
                 args = Array.prototype.slice.call(arguments);
 
-            args[0] += query;
+            args[0] = baseUrl + args[0] + query;
             args[configIndex] = mapMerge(args[configIndex], config);
 
             needleFn.apply(needle, args);

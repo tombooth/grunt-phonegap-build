@@ -28,7 +28,7 @@ function start(taskRefs) {
           else taskRefs.done();
        });
 
-   taskRefs.needle = wrapNeedle(taskRefs.options);
+   taskRefs.needle = wrapNeedle("https://build.phonegap.com", taskRefs.options);
 
    if (taskRefs.options.keys) {
       getKeys(taskRefs, doUpload.bind(null, taskRefs, report));
@@ -42,7 +42,7 @@ function getKeys(taskRefs, callback) {
 
    taskRefs.grunt.log.ok("Getting keys for app");
 
-   taskRefs.needle.get('https://build.phonegap.com/api/v1/apps/' + taskRefs.options.appId, null,
+   taskRefs.needle.get('/api/v1/apps/' + taskRefs.options.appId, null,
          responseHandler("Get keys", taskRefs, function(response, body) {
             var keys = body.keys,
                 platformsUnlockable = Object.keys(taskRefs.options.keys),
@@ -54,7 +54,7 @@ function getKeys(taskRefs, callback) {
                var buildInfo = keys[platform];
 
                if (buildInfo) {
-                  taskRefs.needle.put('https://build.phonegap.com' + keys[platform].link, { data: taskRefs.options.keys[platform] }, null, 
+                  taskRefs.needle.put(keys[platform].link, { data: taskRefs.options.keys[platform] }, null, 
                      responseHandler("Unlocking " + platform, taskRefs, unlocked, unlocked));
                } else {
                   taskRefs.grunt.log.warn("No key attached to app for " + platform);
@@ -79,7 +79,7 @@ function doUpload(taskRefs, callback) {
 
   taskRefs.grunt.log.ok("Starting upload");
 
-  taskRefs.needle.put('https://build.phonegap.com/api/v1/apps/' + taskRefs.options.appId, data, config, callback);
+  taskRefs.needle.put('/api/v1/apps/' + taskRefs.options.appId, data, config, callback);
 
 }
 
@@ -92,7 +92,7 @@ function downloadApps(taskRefs, callback) {
    function ready(platform, status, url) {
       platformsToDownload.splice(platformsToDownload.indexOf(platform), 1);
       if (status === 'complete') {
-         taskRefs.needle.get('https://build.phonegap.com' + url, null,
+         taskRefs.needle.get(url, null,
                responseHandler("Getting download location for " + platform, taskRefs, function(response, data) {
                   taskRefs.grunt.log.ok("Downloading " + platform + " app");
                   needle.get(data.location, null, 
@@ -114,7 +114,7 @@ function downloadApps(taskRefs, callback) {
    }
 
    function check() {
-      taskRefs.needle.get('https://build.phonegap.com/api/v1/apps/' + taskRefs.options.appId, null,
+      taskRefs.needle.get('/api/v1/apps/' + taskRefs.options.appId, null,
             responseHandler("Checking build status", taskRefs, function(response, data) {
                platformsToDownload.forEach(function(platform) {
                   if (data.status[platform] !== 'pending') {
