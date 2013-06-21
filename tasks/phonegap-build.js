@@ -40,28 +40,27 @@ function start(taskRefs) {
 
 function getKeys(taskRefs, callback) {
 
-   taskRefs.log.ok("Getting keys for app");
-
    taskRefs.needle.get('/api/v1/apps/' + taskRefs.options.appId, null,
-         responseHandler("Get keys", taskRefs, function(response, body) {
-            var keys = body.keys,
-                platformsUnlockable = Object.keys(taskRefs.options.keys),
-                numUnlockable = platformsUnlockable.length;
+      responseHandler("Get keys", taskRefs, function(response, body) {
+         var keys = body.keys,
+             platformsUnlockable = Object.keys(taskRefs.options.keys),
+             numUnlockable = platformsUnlockable.length;
 
-            function unlocked() { if (--numUnlockable === 0) callback(); }
+         function unlocked() { if (--numUnlockable === 0) callback(); }
 
-            platformsUnlockable.forEach(function(platform) {
-               var buildInfo = keys[platform];
+         platformsUnlockable.forEach(function(platform) {
+            var buildInfo = keys[platform];
 
-               if (buildInfo) {
-                  taskRefs.needle.put(keys[platform].link, { data: taskRefs.options.keys[platform] }, null, 
-                     responseHandler("Unlocking " + platform, taskRefs, unlocked, unlocked));
-               } else {
-                  taskRefs.log.warn("No key attached to app for " + platform);
-                  unlocked();
-               }
-            });
-         }));
+            if (buildInfo) {
+               taskRefs.needle.put(keys[platform].link, { data: taskRefs.options.keys[platform] }, null, 
+                  responseHandler("Unlocking " + platform, taskRefs, unlocked, unlocked));
+            } else {
+               taskRefs.log.warn("No key attached to app for " + platform);
+               unlocked();
+            }
+         });
+      })
+   );
 
 }
 
@@ -89,6 +88,8 @@ function downloadApps(taskRefs, callback) {
        num = platformsToDownload.length,
        timeoutId;
 
+   function completed() { if (--num === 0) { clearTimeout(timeoutId); callback(); } }
+
    function ready(platform, status, url) {
       platformsToDownload.splice(platformsToDownload.indexOf(platform), 1);
       if (status === 'complete') {
@@ -98,18 +99,13 @@ function downloadApps(taskRefs, callback) {
                   needle.get(data.location, null, 
                      function(err, response, data) {
                         taskRefs.log.ok("Downloaded " + platform + " app");
-                        require('fs').writeFile(taskRefs.options.download[platform], data, function() {
-                           taskRefs.log.ok("Written " + platform + " app");
-                           if (--num === 0) { clearTimeout(timeoutId); callback(); }
-                        });
-                     });
-               }, function() { 
-                  taskRefs.log.error("Failed to get download location for " + platform);
-                  if (--num === 0) { clearTimeout(timeoutId); callback(); }
-               }));
+                        require('fs').writeFile(taskRefs.options.download[platform], data, completed);
+                     }
+                  );
+               }, completed));
       } else {
          taskRefs.log.error('Build failed for ' + platform + ': ' + status);
-         if (--num === 0) { clearTimeout(timeoutId); callback(); }
+         completed();
       }
    }
 
