@@ -30,15 +30,32 @@ The ZIP file should have the "index.html" and the ["Config.xml"](http://build.ph
 Then, some configuration for phonegap-build is needed:
 
 ### General options
- 2. ```appId```: The App ID of the application on build.phonegap.com (see details of your app there to get it)
- 3. ```user```: The email and password or the Github authentication token (all three optional) you log in with on build.phonegap.com. If you leave out your password it will prompt you when grunt runs.
- 4. ```timeout```: (optional, default: 5 seconds) a timeout. You may need to increase this value if you are trying to upload a large app or have a slow connection.
+ 1. ```appId```: The App ID of the application on build.phonegap.com (see details of your app there to get it)
+ 2. ```user```: The email and password or the Github authentication token (all three optional) you log in with on build.phonegap.com. If you leave out your password it will prompt you when grunt runs.
+ 3. ```timeout```: (optional, default: 60 seconds) a timeout. You may need to increase this value if you are trying to upload a large app or have a slow connection.
+ 4. ```pollRate```: (optional, default: 15 seconds) The rate at which the plugin will poll when checking to see if the apps have been built.
 
 ### For file-based applications (using a *.zip file)
  1. ```archive```: The path (or filename, if it's in the same directory as the Gruntfile) to the ZIP archive
  
 ### For repository-based applications (using a github repository)
 1. ```isRepository```: True to set the build method to "pull from repository"
+
+### When unlocking keys
+ 1. ```keys```: A map of platform name [ios, android, ...] to parameters required to unlock the keys. For example:
+
+    keys: {
+      ios: { "password": "foobar" },
+      android: { "key_pw": "foobar", "keystore_pw": "foobar" }
+    }
+
+### When downloading apps
+ 1. ```download```: A map of platform name [ios, android, ...] to path to save the app to. For example:
+
+    download: {
+      ios: 'dist/ios.ipa',
+      android: 'dist/android.apk'
+    }
 
 That's all. Once you configured the build-phonegap, you can run
 
