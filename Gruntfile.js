@@ -2,7 +2,7 @@ module.exports = function(grunt) {
 
   // Project configuration.
   grunt.initConfig({
-    testacularServer: {
+    testacular: {
       unit: {
         configFile: "testacular.conf.js"
       }
@@ -16,6 +16,6 @@ module.exports = function(grunt) {
   grunt.loadTasks('tasks');
 
   // Default task.
-  grunt.registerTask('default', 'testacularServer');
-  grunt.registerTask('test', 'testacularServer');
+  grunt.registerTask('default', 'testacular');
+  grunt.registerTask('test', 'testacular');
 };
